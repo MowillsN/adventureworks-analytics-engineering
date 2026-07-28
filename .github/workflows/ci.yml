@@ -1,0 +1,34 @@
+name: dbt CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  dbt-build-and-test:
+    runs-on: ubuntu-latest
+
+    env:
+      DBT_DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+      DBT_DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dbt-databricks
+        run: pip install dbt-databricks
+
+      - name: Install dbt packages
+        working-directory: adventureworks_dbt
+        run: dbt deps --profiles-dir ../ci
+
+      - name: dbt build (run models + tests)
+        working-directory: adventureworks_dbt
+        run: dbt build --profiles-dir ../ci --target ci

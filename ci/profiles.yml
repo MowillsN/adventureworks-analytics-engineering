@@ -1,0 +1,11 @@
+adventureworks_dbt:
+  target: ci
+  outputs:
+    ci:
+      type: databricks
+      catalog: adventureworks
+      schema: gold
+      host: "{{ env_var('DBT_DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DBT_DATABRICKS_HTTP_PATH') }}"
+      token: "{{ env_var('DBT_DATABRICKS_TOKEN') }}"
+      threads: 4
