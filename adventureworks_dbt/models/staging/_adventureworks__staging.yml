@@ -1,0 +1,54 @@
+version: 2
+
+sources:
+  - name: bronze
+    catalog: adventureworks
+    schema: bronze
+    description: >
+      Raw tables landed from the AdventureWorksDW2025 SQL Server database,
+      extracted via Python and loaded into Databricks as managed Delta tables.
+    tables:
+      - name: dimcustomer
+        description: Customer dimension for internet sales channel.
+
+      - name: dimdate
+        description: Date dimension, used as a role-playing dimension (order/due/ship dates).
+
+      - name: dimgeography
+        description: Geography hierarchy (city, state, country) linked to customers and territories.
+
+      - name: dimproduct
+        description: Product dimension, includes SCD Type 2 history (some attributes null for discontinued/simple products).
+
+      - name: dimproductcategory
+        description: Top-level product category (e.g. Bikes, Components).
+
+      - name: dimproductsubcategory
+        description: Product subcategory, links products to their category.
+
+      - name: dimpromotion
+        description: Sales promotions applied to internet and reseller sales.
+
+      - name: dimsalesterritory
+        description: Sales territory/region dimension.
+
+      - name: dimreseller
+        description: Reseller (B2B customer) dimension for reseller sales channel.
+
+      - name: dimsalesreason
+        description: Reasons a customer gave for an internet purchase (e.g. Price, Quality).
+
+      - name: factinternetsales
+        description: >
+          Internet sales order line grain fact table. One row per
+          (SalesOrderNumber, SalesOrderLineNumber).
+
+      - name: factresellersales
+        description: >
+          Reseller sales order line grain fact table. One row per
+          (SalesOrderNumber, SalesOrderLineNumber).
+
+      - name: factinternetsalesreason
+        description: >
+          Bridge (factless fact) table resolving the many-to-many relationship
+          between internet sales order lines and sales reasons.

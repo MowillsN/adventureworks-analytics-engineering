@@ -1,0 +1,523 @@
+version: 2
+
+models:
+  # --- Dimensions ---
+
+  - name: stg_dim_customer
+    description: "Staged customer dimension for the internet sales channel. One row per customer."
+    columns:
+      - name: customer_key
+        description: "Surrogate key uniquely identifying a customer. Primary key of this table."
+        tests:
+          - unique
+          - not_null
+      - name: geography_key
+        description: "Foreign key to the geography dimension, indicating the customer's location."
+      - name: customer_alternate_key
+        description: "Natural/business key for the customer from the source system."
+      - name: first_name
+        description: "Customer's first name."
+      - name: last_name
+        description: "Customer's last name."
+      - name: birth_date
+        description: "Customer's date of birth."
+      - name: marital_status
+        description: "Customer's marital status (single-character code, e.g. M/S)."
+      - name: suffix
+        description: "Name suffix (e.g. Jr., Sr.), if any."
+      - name: gender
+        description: "Customer's gender."
+      - name: email_address
+        description: "Customer's email address."
+      - name: yearly_income
+        description: "Customer's self-reported yearly income."
+      - name: total_children
+        description: "Total number of children the customer has."
+      - name: number_children_at_home
+        description: "Number of the customer's children currently living at home."
+      - name: education
+        description: "Customer's highest level of education completed."
+      - name: occupation
+        description: "Customer's occupation category."
+      - name: house_owner_flag
+        description: "Flag indicating whether the customer owns their home."
+      - name: number_cars_owned
+        description: "Number of cars owned by the customer."
+      - name: date_first_purchase
+        description: "Date of the customer's first purchase."
+      - name: commute_distance
+        description: "Customer's commute distance category."
+
+  - name: stg_dim_date
+    description: "Staged date dimension. One row per calendar day, spanning 10 years. Used as a role-playing dimension for order/due/ship dates in the fact tables."
+    columns:
+      - name: date_key
+        description: "Surrogate key for the date, formatted as an integer (e.g. 20130101). Primary key of this table."
+        tests:
+          - unique
+          - not_null
+      - name: full_date
+        description: "The actual calendar date value."
+      - name: day_number_of_week
+        description: "Numeric day of the week (1-7)."
+      - name: day_name
+        description: "Full English name of the day (e.g. Monday)."
+      - name: day_name_spanish
+        description: "Full Spanish name of the day."
+      - name: day_name_french
+        description: "Full French name of the day."
+      - name: day_number_of_month
+        description: "Day of the month (1-31)."
+      - name: day_number_of_year
+        description: "Day of the year (1-366)."
+      - name: week_number_of_year
+        description: "Week number within the calendar year."
+      - name: month_name
+        description: "Full English name of the month."
+      - name: month_name_spanish
+        description: "Full Spanish name of the month."
+      - name: month_name_french
+        description: "Full French name of the month."
+      - name: month_number_of_year
+        description: "Month number (1-12)."
+      - name: calendar_quarter
+        description: "Calendar quarter (1-4)."
+      - name: calendar_year
+        description: "Calendar year."
+      - name: calendar_semester
+        description: "Calendar half-year (1 or 2)."
+      - name: fiscal_quarter
+        description: "Fiscal quarter, per AdventureWorks' fiscal calendar (offset from calendar year)."
+      - name: fiscal_year
+        description: "Fiscal year."
+      - name: fiscal_semester
+        description: "Fiscal half-year (1 or 2)."
+
+  - name: stg_dim_geography
+    description: "Staged geography dimension. One row per unique city/state/country combination, linked to a sales territory."
+    columns:
+      - name: geography_key
+        description: "Surrogate key uniquely identifying a geography record. Primary key of this table."
+        tests:
+          - unique
+          - not_null
+      - name: city
+        description: "City name."
+      - name: state_province_code
+        description: "Abbreviated state or province code."
+      - name: state_province_name
+        description: "Full state or province name."
+      - name: country_region_code
+        description: "Abbreviated country/region code."
+      - name: country_region_name
+        description: "Full country/region name."
+      - name: postal_code
+        description: "Postal or ZIP code."
+      - name: sales_territory_key
+        description: "Foreign key to the sales territory dimension."
+
+  - name: stg_dim_product
+    description: >
+      Staged product dimension. Contains SCD Type 2 history — some attribute
+      columns are legitimately null for discontinued products or products
+      where the attribute doesn't apply (e.g. weight/size for non-physical items).
+    columns:
+      - name: product_key
+        description: "Surrogate key uniquely identifying a product record (may represent a specific version in SCD2 history). Primary key of this table."
+        tests:
+          - unique
+          - not_null
+      - name: product_alternate_key
+        description: "Natural/business key for the product from the source system."
+      - name: product_subcategory_key
+        description: "Foreign key to the product subcategory dimension. Null for some products without a subcategory assignment."
+      - name: weight_unit_measure_code
+        description: "Unit of measure code for the product's weight."
+      - name: size_unit_measure_code
+        description: "Unit of measure code for the product's size."
+      - name: product_name
+        description: "English product name."
+      - name: standard_cost
+        description: "Standard cost to produce/acquire the product."
+      - name: finished_goods_flag
+        description: "Flag indicating whether the product is a finished good (vs. a component/raw material)."
+      - name: color
+        description: "Product color."
+      - name: safety_stock_level
+        description: "Minimum inventory quantity to maintain."
+      - name: reorder_point
+        description: "Inventory level at which a reorder should be triggered."
+      - name: list_price
+        description: "Standard list/retail price."
+      - name: size
+        description: "Product size."
+      - name: size_range
+        description: "Descriptive size range (e.g. '38-40 CM')."
+      - name: weight
+        description: "Product weight."
+      - name: days_to_manufacture
+        description: "Number of days required to manufacture the product."
+      - name: product_line
+        description: "Product line category."
+      - name: dealer_price
+        description: "Wholesale/dealer price."
+      - name: class
+        description: "Product class (e.g. L, M, H for Low/Medium/High)."
+      - name: style
+        description: "Product style (e.g. Unisex, Men's, Women's)."
+      - name: model_name
+        description: "Product model name."
+      - name: description
+        description: "English product description."
+      - name: start_date
+        description: "Date this product record version became effective (SCD2)."
+      - name: end_date
+        description: "Date this product record version stopped being effective (SCD2). Null indicates the current/active version."
+      - name: status
+        description: "Product status (e.g. Current, Discontinued)."
+
+  - name: stg_dim_product_category
+    description: "Staged top-level product category dimension (e.g. Bikes, Components, Clothing, Accessories)."
+    columns:
+      - name: product_category_key
+        description: "Surrogate key uniquely identifying a product category. Primary key of this table."
+        tests:
+          - unique
+          - not_null
+      - name: product_category_alternate_key
+        description: "Natural/business key for the category from the source system."
+      - name: product_category_name
+        description: "English category name."
+
+  - name: stg_dim_product_subcategory
+    description: "Staged product subcategory dimension, linking each subcategory to its parent category."
+    columns:
+      - name: product_subcategory_key
+        description: "Surrogate key uniquely identifying a product subcategory. Primary key of this table."
+        tests:
+          - unique
+          - not_null
+      - name: product_subcategory_alternate_key
+        description: "Natural/business key for the subcategory from the source system."
+      - name: product_subcategory_name
+        description: "English subcategory name."
+      - name: product_category_key
+        description: "Foreign key to the parent product category."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('stg_dim_product_category')
+                field: product_category_key
+
+  - name: stg_dim_promotion
+    description: "Staged promotion dimension. Applies to both internet and reseller sales channels."
+    columns:
+      - name: promotion_key
+        description: "Surrogate key uniquely identifying a promotion. Primary key of this table."
+        tests:
+          - unique
+          - not_null
+      - name: promotion_alternate_key
+        description: "Natural/business key for the promotion from the source system."
+      - name: promotion_name
+        description: "English promotion name."
+      - name: discount_pct
+        description: "Discount percentage applied under this promotion."
+      - name: promotion_type
+        description: "Type of promotion (e.g. No Discount, Volume Discount)."
+      - name: promotion_category
+        description: "Category of the promotion (e.g. Customer, Reseller)."
+      - name: start_date
+        description: "Date the promotion started."
+      - name: end_date
+        description: "Date the promotion ended."
+      - name: min_qty
+        description: "Minimum purchase quantity required for the promotion, if applicable."
+      - name: max_qty
+        description: "Maximum purchase quantity eligible for the promotion. Null indicates no maximum limit."
+
+  - name: stg_dim_sales_territory
+    description: "Staged sales territory dimension, representing geographic sales regions grouped by country/group."
+    columns:
+      - name: sales_territory_key
+        description: "Surrogate key uniquely identifying a sales territory. Primary key of this table."
+        tests:
+          - unique
+          - not_null
+      - name: sales_territory_alternate_key
+        description: "Natural/business key for the territory from the source system."
+      - name: sales_territory_region
+        description: "Territory region name (e.g. Northwest, France)."
+      - name: sales_territory_country
+        description: "Territory country name."
+      - name: sales_territory_group
+        description: "Higher-level territory grouping (e.g. North America, Europe)."
+
+  - name: stg_dim_reseller
+    description: "Staged reseller dimension, representing B2B accounts purchasing through the reseller sales channel."
+    columns:
+      - name: reseller_key
+        description: "Surrogate key uniquely identifying a reseller. Primary key of this table."
+        tests:
+          - unique
+          - not_null
+      - name: geography_key
+        description: "Foreign key to the geography dimension, indicating the reseller's location."
+      - name: reseller_alternate_key
+        description: "Natural/business key for the reseller from the source system."
+      - name: phone
+        description: "Reseller's phone number."
+      - name: business_type
+        description: "Type of reseller business (e.g. Value Added Reseller, Warehouse)."
+      - name: reseller_name
+        description: "Reseller company name."
+      - name: number_employees
+        description: "Number of employees at the reseller."
+      - name: order_frequency
+        description: "Coded value indicating how often the reseller places orders."
+      - name: order_month
+        description: "Typical month the reseller places orders. Null for some resellers."
+      - name: first_order_year
+        description: "Year of the reseller's first order. Null for some resellers."
+      - name: last_order_year
+        description: "Year of the reseller's most recent order. Null for some resellers."
+      - name: product_line
+        description: "Product line(s) the reseller carries."
+      - name: address_line1
+        description: "Reseller's primary address line."
+      - name: address_line2
+        description: "Reseller's secondary address line. Null for most resellers (optional field)."
+      - name: annual_sales
+        description: "Reseller's reported annual sales figure."
+      - name: bank_name
+        description: "Name of the reseller's bank."
+      - name: min_payment_type
+        description: "Coded value for the reseller's minimum payment type. Null for some resellers."
+      - name: min_payment_amount
+        description: "Reseller's minimum payment amount. Null for some resellers."
+      - name: annual_revenue
+        description: "Reseller's reported annual revenue."
+      - name: year_opened
+        description: "Year the reseller business was opened."
+
+  - name: stg_dim_sales_reason
+    description: "Staged sales reason dimension. Internet-sales-only concept — captures why a customer made a purchase (e.g. Price, Quality, Promotion)."
+    columns:
+      - name: sales_reason_key
+        description: "Surrogate key uniquely identifying a sales reason. Primary key of this table."
+        tests:
+          - unique
+          - not_null
+      - name: sales_reason_alternate_key
+        description: "Natural/business key for the sales reason from the source system."
+      - name: sales_reason_name
+        description: "English name of the sales reason."
+      - name: sales_reason_type
+        description: "Category of the sales reason (e.g. Marketing, Promotion, Other)."
+
+  # --- Facts ---
+
+  - name: stg_fact_internet_sales
+    description: >
+      Staged internet sales fact table. Grain: one row per internet sales
+      order line (sales_order_number + sales_order_line_number).
+      carrier_tracking_number and customer_po_number are always null for this
+      channel — these are B2B/freight concepts that don't apply to direct
+      consumer purchases.
+    columns:
+      - name: product_key
+        description: "Foreign key to the product dimension."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_dim_product')
+                field: product_key
+      - name: order_date_key
+        description: "Foreign key to the date dimension, representing the order date."
+      - name: due_date_key
+        description: "Foreign key to the date dimension, representing the due date."
+      - name: ship_date_key
+        description: "Foreign key to the date dimension, representing the ship date."
+      - name: customer_key
+        description: "Foreign key to the customer dimension."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_dim_customer')
+                field: customer_key
+      - name: promotion_key
+        description: "Foreign key to the promotion dimension. May reference the 'no promotion' record if none was applied."
+      - name: currency_key
+        description: "Foreign key to the currency dimension (out of scope for this project; retained for reference only)."
+      - name: sales_territory_key
+        description: "Foreign key to the sales territory dimension."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('stg_dim_sales_territory')
+                field: sales_territory_key
+      - name: sales_order_number
+        description: "Business sales order number. Part of the composite grain key."
+      - name: sales_order_line_number
+        description: "Line number within the sales order. Part of the composite grain key."
+      - name: revision_number
+        description: "Revision number of the sales order."
+      - name: order_quantity
+        description: "Quantity of the product ordered on this line."
+        tests:
+          - not_null
+      - name: unit_price
+        description: "Unit price of the product at time of sale."
+      - name: extended_amount
+        description: "Unit price multiplied by order quantity, before discount."
+      - name: unit_price_discount_pct
+        description: "Discount percentage applied to the unit price."
+      - name: discount_amount
+        description: "Total discount amount applied to this line."
+      - name: product_standard_cost
+        description: "Standard cost of the product at time of sale."
+      - name: total_product_cost
+        description: "Total cost of the product for this line (standard cost x quantity)."
+      - name: sales_amount
+        description: "Final sales amount for this line, after discount. Core revenue measure."
+        tests:
+          - not_null
+      - name: tax_amount
+        description: "Tax amount applied to this line."
+      - name: freight
+        description: "Freight/shipping cost for this line."
+      - name: carrier_tracking_number
+        description: "Freight carrier tracking number. Always null for internet sales (not applicable to this channel)."
+      - name: customer_po_number
+        description: "Customer purchase order number. Always null for internet sales (not applicable to this channel)."
+      - name: order_date
+        description: "Date the order was placed."
+      - name: due_date
+        description: "Date the order is due."
+      - name: ship_date
+        description: "Date the order was shipped."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - sales_order_number
+              - sales_order_line_number
+
+  - name: stg_fact_reseller_sales
+    description: >
+      Staged reseller sales fact table. Grain: one row per reseller sales
+      order line (sales_order_number + sales_order_line_number).
+      Unlike internet sales, this channel includes reseller_key and
+      employee_key (B2B account and sales rep), and does not use sales
+      reasons.
+    columns:
+      - name: product_key
+        description: "Foreign key to the product dimension."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_dim_product')
+                field: product_key
+      - name: order_date_key
+        description: "Foreign key to the date dimension, representing the order date."
+      - name: due_date_key
+        description: "Foreign key to the date dimension, representing the due date."
+      - name: ship_date_key
+        description: "Foreign key to the date dimension, representing the ship date."
+      - name: reseller_key
+        description: "Foreign key to the reseller dimension."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_dim_reseller')
+                field: reseller_key
+      - name: employee_key
+        description: "Foreign key to the employee (sales rep) dimension. Out of scope for this project; retained for reference only."
+      - name: promotion_key
+        description: "Foreign key to the promotion dimension. May reference the 'no promotion' record if none was applied."
+      - name: currency_key
+        description: "Foreign key to the currency dimension (out of scope for this project; retained for reference only)."
+      - name: sales_territory_key
+        description: "Foreign key to the sales territory dimension."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('stg_dim_sales_territory')
+                field: sales_territory_key
+      - name: sales_order_number
+        description: "Business sales order number. Part of the composite grain key."
+      - name: sales_order_line_number
+        description: "Line number within the sales order. Part of the composite grain key."
+      - name: revision_number
+        description: "Revision number of the sales order."
+      - name: order_quantity
+        description: "Quantity of the product ordered on this line."
+        tests:
+          - not_null
+      - name: unit_price
+        description: "Unit price of the product at time of sale."
+      - name: extended_amount
+        description: "Unit price multiplied by order quantity, before discount."
+      - name: unit_price_discount_pct
+        description: "Discount percentage applied to the unit price."
+      - name: discount_amount
+        description: "Total discount amount applied to this line."
+      - name: product_standard_cost
+        description: "Standard cost of the product at time of sale."
+      - name: total_product_cost
+        description: "Total cost of the product for this line (standard cost x quantity)."
+      - name: sales_amount
+        description: "Final sales amount for this line, after discount. Core revenue measure."
+        tests:
+          - not_null
+      - name: tax_amount
+        description: "Tax amount applied to this line."
+      - name: freight
+        description: "Freight/shipping cost for this line."
+      - name: carrier_tracking_number
+        description: "Freight carrier tracking number for this shipment."
+      - name: customer_po_number
+        description: "Customer (reseller's) purchase order number."
+      - name: order_date
+        description: "Date the order was placed."
+      - name: due_date
+        description: "Date the order is due."
+      - name: ship_date
+        description: "Date the order was shipped."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - sales_order_number
+              - sales_order_line_number
+
+  - name: stg_fact_internet_sales_reason
+    description: >
+      Staged bridge (factless fact) table resolving the many-to-many
+      relationship between internet sales order lines and sales reasons.
+      Contains no measures — purely a key resolver. Grain: one row per
+      (sales_order_number, sales_order_line_number, sales_reason_key).
+    columns:
+      - name: sales_order_number
+        description: "Business sales order number. Part of the composite grain key."
+      - name: sales_order_line_number
+        description: "Line number within the sales order. Part of the composite grain key."
+      - name: sales_reason_key
+        description: "Foreign key to the sales reason dimension. Part of the composite grain key."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_dim_sales_reason')
+                field: sales_reason_key
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - sales_order_number
+              - sales_order_line_number
+              - sales_reason_key

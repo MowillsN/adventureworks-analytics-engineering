@@ -1,0 +1,28 @@
+select
+    product_key,
+    order_date_key,
+    due_date_key,
+    ship_date_key,
+    reseller_key,
+    employee_key,
+    promotion_key,
+    sales_territory_key,
+    sales_order_number,
+    sales_order_line_number,
+    order_quantity,
+    unit_price,
+    extended_amount,
+    unit_price_discount_pct,
+    discount_amount,
+    product_standard_cost,
+    total_product_cost,
+    sales_amount,
+    tax_amount,
+    freight,
+    carrier_tracking_number,
+    customer_po_number,
+    order_date,
+    due_date,
+    ship_date
+
+from {{ ref('stg_fact_reseller_sales') }}

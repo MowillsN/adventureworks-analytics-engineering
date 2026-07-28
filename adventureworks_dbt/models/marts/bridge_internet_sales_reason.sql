@@ -1,0 +1,1 @@
+select * from {{ ref('stg_fact_internet_sales_reason') }}
