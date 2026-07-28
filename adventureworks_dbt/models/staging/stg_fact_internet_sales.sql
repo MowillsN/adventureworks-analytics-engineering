@@ -7,6 +7,7 @@ with source as (
 renamed as (
 
     select
+        concat(SalesOrderNumber, '-', cast(SalesOrderLineNumber as string)) as sales_order_line_key,
         ProductKey             as product_key,
         OrderDateKey           as order_date_key,
         DueDateKey             as due_date_key,

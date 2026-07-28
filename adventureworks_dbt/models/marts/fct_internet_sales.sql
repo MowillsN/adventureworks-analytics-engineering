@@ -1,4 +1,5 @@
 select
+    sales_order_line_key,
     product_key,
     order_date_key,
     due_date_key,

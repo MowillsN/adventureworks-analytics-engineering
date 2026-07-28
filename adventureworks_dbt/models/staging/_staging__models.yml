@@ -398,6 +398,11 @@ models:
         description: "Date the order is due."
       - name: ship_date
         description: "Date the order was shipped."
+      - name: sales_order_line_key
+        description: "Surrogate composite key (sales_order_number + sales_order_line_number), used to relate fct_internet_sales to bridge_internet_sales_reason in Power BI, which only supports single-column relationships."
+        tests:
+          - unique
+          - not_null
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -514,6 +519,10 @@ models:
               arguments:
                 to: ref('stg_dim_sales_reason')
                 field: sales_reason_key
+      - name: sales_order_line_key
+        description: "Surrogate composite key (sales_order_number + sales_order_line_number), used to relate this bridge table to fct_internet_sales. Not unique here — a single order line can have multiple sales reasons."
+        tests:
+          - not_null
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
