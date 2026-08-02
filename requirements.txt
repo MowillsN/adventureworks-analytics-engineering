@@ -1,0 +1,7 @@
+pyodbc
+pandas
+pyarrow
+sqlalchemy
+databricks-sdk
+python-dotenv
+dbt-databricks
